@@ -1,0 +1,13 @@
+import {getWorkspaceContext,canManage} from '@/lib/authz';
+import {ActionForm,DataTable,StatusAction,type Field} from '@/components/Operations';
+export default async function Projects({params}:{params:Promise<{slug:string}>}){
+ const {slug}=await params;const {workspace,supabase,role}=await getWorkspaceContext(slug);
+ const {data,error}=await supabase.from('projects').select('id,name,description,client_name,domain,status,visibility,due_at,created_at').eq('workspace_id',workspace.id).order('created_at',{ascending:false}).limit(500);
+ if(error)throw Error(error.message);
+ const rows=data||[];
+ const {data:members}=await supabase.from('workspace_members').select('user_id,role').eq('workspace_id',workspace.id);
+ const fields:Field[]=[{name:'name',label:'Project name',required:true,placeholder:'Website redesign / ORM campaign'}, {name:'client_name',label:'Client name',placeholder:'Client / company'}, {name:'domain',label:'Website domain',placeholder:'example.com'}, {name:'description',label:'Description',type:'textarea'}, {name:'visibility',label:'Visibility',type:'select',required:true,defaultValue:'workspace',options:[{value:'workspace',label:'Workspace members'},{value:'private',label:'Only invited project members'}]}];
+ return <><div className="page-title"><div><div className="eyebrow">PROJECT MANAGEMENT</div><h1>Projects</h1><p className="muted">Organize client work and campaigns in one workspace.</p></div>{canManage(role)&&<ActionForm slug={slug} action="projects.create" label="New project" title="Create project" fields={fields}/>}</div>
+ <div className="info-strip">Private projects require explicit membership. Only authorized team members can view project details.</div>
+ <DataTable rows={rows} columns={[{key:'name',label:'Project'},{key:'client_name',label:'Client'},{key:'domain',label:'Website'},{key:'visibility',label:'Access',kind:'badge'},{key:'status',label:'Status',kind:'badge'},{key:'created_at',label:'Created',kind:'date'}]} empty="Create your first project to organize tasks and marketing work.">{canManage(role)?r=><div className="action-row"><StatusAction slug={slug} action="projects.update" payload={{id:r.id,status:r.status==='active'?'on_hold':'active'}} label={r.status==='active'?'Pause':'Activate'}/><StatusAction slug={slug} action="projects.update" payload={{id:r.id,status:'completed'}} label="Complete"/><ActionForm slug={slug} action="projects.member" label="Share" buttonVariant="secondary" initial={{project_id:r.id}} fields={[{name:'user_id',label:'Share with member',type:'select',required:true,options:(members||[]).map(m=>({value:m.user_id,label:m.user_id+' ('+m.role+')'}))}]}/></div>:undefined}</DataTable></>;
+}

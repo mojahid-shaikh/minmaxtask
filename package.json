@@ -1,0 +1,51 @@
+{
+  "name": "complete-work-management-saas",
+  "version": "0.8.0-preview",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify:syntax": "node scripts/verify-syntax.cjs",
+    "test:offline": "node scripts/offline-csv-test.cjs && node scripts/source-audit.cjs && node scripts/verify-syntax.cjs"
+  },
+  "dependencies": {
+    "@supabase/ssr": "0.6.1",
+    "@supabase/supabase-js": "2.118.0",
+    "@xyflow/react": "12.6.0",
+    "exceljs": "4.4.0",
+    "lucide-react": "0.468.0",
+    "next": "15.5.28",
+    "pdf-lib": "1.17.1",
+    "react": "19.2.9",
+    "react-dom": "19.2.9",
+    "recharts": "2.15.3",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "3.3.1",
+    "@types/node": "22.15.3",
+    "@types/react": "19.0.12",
+    "@types/react-dom": "19.0.4",
+    "autoprefixer": "10.4.21",
+    "eslint": "9.39.5",
+    "eslint-config-next": "15.5.28",
+    "postcss": "^8.5.23",
+    "tailwindcss": "3.4.17",
+    "typescript": "5.8.3",
+    "vitest": "5.0.5"
+  },
+  "overrides": {
+    "postcss": "$postcss",
+    "exceljs": {
+      "uuid": "11.1.1"
+    }
+  },
+  "engines": {
+    "node": ">=20.11.0"
+  }
+}

@@ -1,0 +1,11 @@
+import {getWorkspaceContext,canAdmin} from '@/lib/authz';import {ActionForm,DataTable,type Field} from '@/components/Operations';
+export default async function Accounts({params}:{params:Promise<{slug:string}>}){
+ const {slug}=await params;const {workspace,supabase,role}=await getWorkspaceContext(slug);
+ const [{data:accounts,error},{data:members}]=await Promise.all([
+ supabase.from('account_directory').select('id,service,account_email,username,login_url,vault_reference,note,created_at').eq('workspace_id',workspace.id).order('created_at',{ascending:false}).limit(500),
+ supabase.from('workspace_members').select('user_id,role').eq('workspace_id',workspace.id)]);
+ if(error)throw Error(error.message);
+ const fields:Field[]=[{name:'service',label:'Website / service',required:true,placeholder:'LinkedIn, Medium, WordPress...'},{name:'account_email',label:'Account email',type:'email'},{name:'username',label:'Username'},{name:'login_url',label:'Login page URL',type:'url'},{name:'vault_reference',label:'External password vault link (never a password)',type:'url',placeholder:'https://...'}, {name:'note',label:'Safe notes (no passwords)',type:'textarea'}];
+ return <><div className="page-title"><div><div className="eyebrow">SECURE OPERATIONS</div><h1>Account directory</h1><p className="muted">Account metadata and references to an external vault; never passwords or recovery codes.</p></div>{canAdmin(role)&&<ActionForm slug={slug} action="accounts.create" label="Add account reference" fields={fields}/>}</div><div className="info-strip">Access to account entries is restricted by individual grants or owner/admin permissions. Store secret credentials in a dedicated password manager, not here.</div>
+ <DataTable rows={accounts||[]} columns={[{key:'service',label:'Service'},{key:'account_email',label:'Email'},{key:'username',label:'Username'},{key:'login_url',label:'Sign-in',kind:'url'},{key:'vault_reference',label:'Vault link',kind:'url'},{key:'created_at',label:'Added',kind:'date'}]}>{canAdmin(role)?r=><ActionForm slug={slug} action="accounts.grant" label="Grant access" buttonVariant="secondary" title="Grant account access" initial={{account_id:r.id}} fields={[{name:'user_id',label:'Team member',type:'select',required:true,options:(members||[]).map(m=>({value:m.user_id,label:m.user_id+' ('+m.role+')'}))}]}/>:undefined}</DataTable></>;
+}

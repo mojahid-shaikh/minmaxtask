@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
+const ts=require('typescript');
+const original=fs.readFileSync(path.join(__dirname,'..','lib','keyword-csv.ts'),'utf8');
+const js=ts.transpileModule(original,{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+const sandboxExports={};vm.runInNewContext(js,{exports:sandboxExports,require,module:{exports:sandboxExports}}, {timeout:1000});
+const {parseCsv,rowsToObjects}=sandboxExports;
+assert.equal(parseCsv('a,b\n1,2\n').length,2);
+assert.equal(parseCsv('a,b\r\n"one,two","say ""yes"""\r\n')[1][0],'one,two');
+assert.deepEqual(JSON.stringify(rowsToObjects(parseCsv('keyword,intent\n"smart audit",Commercial'))),JSON.stringify([{keyword:'smart audit',intent:'Commercial'}]));
+assert.throws(()=>parseCsv('keyword\n"unclosed'));
+assert.throws(()=>rowsToObjects([['a','a'],['1','2']]));
+console.log('PASS: 5 standalone CSV parser assertions');

@@ -1,0 +1,5 @@
+const fs=require('fs'),path=require('path');const ts=require('typescript');
+function walk(dir){return fs.readdirSync(dir,{withFileTypes:true}).flatMap(d=>d.isDirectory()?walk(path.join(dir,d.name)):/\.(ts|tsx)$/.test(d.name)?[path.join(dir,d.name)]:[])}
+const files=[...walk(path.join(__dirname,'..','app')),...walk(path.join(__dirname,'..','components')),...walk(path.join(__dirname,'..','lib')),...walk(path.join(__dirname,'..','tests'))];let errors=0;
+for(const f of files){const src=fs.readFileSync(f,'utf8');const output=ts.transpileModule(src,{fileName:f,compilerOptions:{jsx:ts.JsxEmit.ReactJSX,module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022,strict:true},reportDiagnostics:true});const bad=(output.diagnostics||[]).filter(x=>x.category===ts.DiagnosticCategory.Error);if(bad.length){errors+=bad.length;console.error('ERROR',f,bad.map(x=>ts.flattenDiagnosticMessageText(x.messageText,' ')));}}
+console.log(`Parsed ${files.length} TS/TSX files, ${errors} syntax errors`);process.exit(errors?1:0);

@@ -1,0 +1,5 @@
+import Link from 'next/link';
+import {Layers3,ShieldCheck,Network,CheckSquare2} from 'lucide-react';
+export default function AuthLayout({children}:{children:React.ReactNode}){
+ return <main className="auth-page"><aside className="auth-hero"><Link href="/" className="brand"><span className="brand-mark"><Layers3 size={19}/></span>WorkSphere</Link><div><div className="eyebrow" style={{color:'#7be4da'}}>BUILT FOR BETTER WORK</div><h1>One focused place for everything your team achieves.</h1><p>Manage tasks, team approvals, SEO campaigns, social publishing records, and insightful reports - all in a secure workspace.</p><div className="auth-feature"><CheckSquare2 size={21}/> Track work from assignment to approval</div><div className="auth-feature"><Network size={21}/> Connect research, content, and projects</div><div className="auth-feature"><ShieldCheck size={21}/> Keep workspace data separate and protected</div></div><div className="tiny" style={{color:'#9bb5c4'}}>WorkSphere • Team productivity platform</div></aside><section className="auth-main">{children}</section></main>
+}
